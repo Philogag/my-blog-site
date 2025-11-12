@@ -1,0 +1,21 @@
+services:
+
+  my-blog-site:
+    image: caddy
+    container_name: my_blog_site
+    restart: unless-stopped
+    volumes:
+      - $PWD/html:/usr/share/caddy
+    networks:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
+      - "traefik.http.routers.www.entrypoints=https"
+      - "traefik.http.routers.www.rule=Host(`www.philogag.com`)"
+      - "traefik.http.routers.www.tls=true"
+
+networks:
+  traefik:
+    name: traefik
+    external: true
