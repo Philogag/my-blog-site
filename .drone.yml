@@ -29,5 +29,5 @@ steps:
       password:
         from_secret: deploy_ssh_password
       source: src/.vuepress/dist/*
-      target: ~/workspace/service/my-blog-site/html
+      target: ~/service/my-blog-site/html
       strip_components: 3
