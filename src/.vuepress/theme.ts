@@ -13,7 +13,7 @@ export default hopeTheme({
 
   editLink: false,
 
-  logo: "avatar.png",
+  logo: "/assets/images/avatar.png",
 
   repo: "philogag/my-blog",
 
