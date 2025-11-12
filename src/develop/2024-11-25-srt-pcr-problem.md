@@ -7,6 +7,7 @@ category:
   - 软件开发
   - Bug纪实
 tag:
+  - Debug
   - 流媒体
   - SRT
   - FFmpeg

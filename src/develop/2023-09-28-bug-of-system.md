@@ -8,6 +8,7 @@ category:
   - Bug纪实
 tag:
   - C/C++
+  - Debug
   - syscall
   - linux
 sticky: false # 置顶
