@@ -12,18 +12,26 @@ export default hopeTheme({
   },
 
   editLink: false,
+  lastUpdated: true,
+  changelog: true,
 
   logo: "/assets/images/avatar.png",
 
-  repo: "philogag/my-blog",
+  repo: "Philogag/my-blog-site",
 
   docsDir: "src",
+  docsBranch: "main",
 
   // 导航栏
   // navbar,
 
   // 侧边栏
   // sidebar,
+
+  navbarLayout: {
+    start: ["Brand"],
+    end: ["BuildStatus" ,"Language", "Repo", "Outlook", "Search"],
+  },
 
   // 页脚
   footer: "<a href=\"https://beian.miit.gov.cn/\" target=\"_blank\">浙ICP备19037868号</a> | Power by <a href=\"https://theme-hope.vuejs.press\" target=\"_blank\">VuePress Theme Hope</a>",
@@ -69,6 +77,10 @@ export default hopeTheme({
       //   icon: "https://theme-hope-assets.vuejs.press/logo.svg",
       //   link: "https://theme-hope.vuejs.press",
       // },
+      Status: {
+        icon: "https://devops.philogag.com/api/badges/philogag/my-blog-site/status.svg",
+        link: "https://devops.philogag.com/philogag/my-blog-site",
+      }
     },
   },
 
@@ -228,4 +240,5 @@ export default hopeTheme({
     //   },
     // },
   },
+
 });
