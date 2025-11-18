@@ -77,10 +77,10 @@ export default hopeTheme({
       //   icon: "https://theme-hope-assets.vuejs.press/logo.svg",
       //   link: "https://theme-hope.vuejs.press",
       // },
-      Status: {
-        icon: "https://devops.philogag.com/api/badges/philogag/my-blog-site/status.svg",
-        link: "https://devops.philogag.com/philogag/my-blog-site",
-      }
+      // Status: {
+      //   icon: "https://devops.philogag.com/api/badges/philogag/my-blog-site/status.svg",
+      //   link: "https://devops.philogag.com/philogag/my-blog-site",
+      // }
     },
   },
 
@@ -94,6 +94,7 @@ export default hopeTheme({
 
   // 此处开启了很多功能用于演示，你应仅保留用到的功能。
   markdown: {
+    hint: true,
     align: true,
     attrs: true,
     codeTabs: true,
