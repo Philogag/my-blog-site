@@ -15,37 +15,17 @@ footer:
 ---
 
 Win 10 已经结束了支持，但是我不想升级到Win11，因此决定将主力机切换到Linux。
-在试用了多个发行版后，最终决定使用 Fedora Kinoite。
+在试用了多个发行版后，最终决定使用 Fedora Silverblue。
 此文记录了一些初步设置过程，主要是 **显卡驱动** 和 **输入法** 。
 
 <!-- more -->
 
-## 为什么选用 Fedora Kinoite
+## 为什么选用 Fedora Silverblue
 
-1. 我希望使用 原子更新 作为底层特性的发行版，这样的发行版更为稳定、不用折腾
-2. 不喜欢Gnome，因此选择原生带KDE的发行版
-
-这样一来，选择只剩下了 Fedora 和 OpenSUSE。
-
-4. OpenSUSE 系列: 
-    + 优点：
-        + 整体较为稳定，滚动发行版包也较新；
-        + 与KDE关联最为密切，适配度最好
-        + 提供Nvidia驱动源，安装驱动很方便
-        + 默认提供 Wayland 和 X11 会话
-    + 缺点：
-        + 社区不活跃，包比较匮乏，且国内镜像更新不及时，容易产生bug
-        + 滚动过快，可能bug较多；
-        + Slowroll 版本仍未进入主要发行，支持度更加匮乏
-        + 且 Slowroll 不支持LiveOS，在只有NV显卡的电脑上无法进入安装界面；而我又不想先装 Tumbleweed 再更新为 Slowroll
-
-最终还是选择 [**Fedora Kinoite**](https://fedoraproject.org/atomic-desktops/kinoite/)
-
-+ 整体较新，每半年一个大版本，社区活跃，包丰富
-+ 支持原子更新，根目录挂载为只读模式，更稳定和省心
-+ 原生提供 KDE 镜像安装
-+ 提供 Nvidia 驱动源
-+ 默认仅提供 Wayland 会话
+1. 整体较新，每半年一个大版本，社区活跃，包丰富
+2. 使用 原子更新 作为底层特性的发行版，这样的发行版更为稳定、不用折腾，且完全由包管理器和flatpak管理，减少心智负担
+3. Wayland 对于远程桌面的支持很烂，我需要切换到 X11，后续切换到 Cinnamon 桌面，其使用 GTK 生态，因此从 GNOME 切换过去问题更少
+4. 提供 Nvidia 驱动源, 安装驱动很方便
 
 ## 安装系统
 
@@ -69,8 +49,8 @@ Win 10 已经结束了支持，但是我不想升级到Win11，因此决定将�
 
 ::: tip
 在使用原子模式系列的Fedora中，包管理工具为 `rpm-ostree` 而非 `dnf`
-另外，推荐使用 `flatpack` 安装大型应用，如 Steam 等，而非直接安装进系统
-::: 
+另外，推荐使用 `flatpak` 安装大型应用，如 Steam 等，而非直接安装进系统
+:::
 
 ::: important
 在同一次启动内安装的所有包都会合并到一个原子操作中，并在重启后提交进变动
@@ -79,6 +59,67 @@ Win 10 已经结束了支持，但是我不想升级到Win11，因此决定将�
 
 ::: important
 如果需要快速滚回，在启动时的Grub界面切换到 `ostree:1` 即可滚回一个原子节点
+:::
+
+## 安装一些基础维护工具
+
+```bash
+sudo rpm-ostree install --idempotent git vim neovim curl wget zsh fastfetch btop ncdu autofs
+```
+完成后重启即可
+
+## 挂载 Home
+
+将安装完成的 /home 目录迁移到另一块硬盘上，便于重装系统
+
+> 在以下命令中，
+>  + 新硬盘为 /dev/sdb
+>  + 用户名为 philogag
+
+1. 不用分区，直接将全盘格式化为 btrfs
+sudo mkfs.btrfs -f /dev/sdb
+
+2. 创建子卷
+```bash
+sudo mkdir /mnt/sdb
+sudo mount /dev/sdb /mnt/sdb
+sudo btrfs subvolume snapshot -r /home /mnt/home.snap
+sudo btrfs send /mnt/home.snap | sudo btrfs receive /mnt/sdb/
+sudo btrfs subvolume snapshot /mnt/sdb/home.snap /mnt/sdb/home
+sudo btrfs subvolume delete /mnt/home.snap
+sudo btrfs subvolume delete /mnt/sdb/home.snap
+sudo umount /mnt
+```
+
+3. 配置挂载
+使用 `ls /dev/disk/by-uuid -l | grep sdb` 获取分区的 UUID
+修改 /etc/fstab
+注释掉原有的/home挂载
+并在末尾添加新的挂载
+```fstab
+UUID=c5de8f77-53b5-4450-9e06-07e3c80dfd12 /home btrfs subvol=home,compress=zstd:1 0 0
+```
+
+而后更新系统
+```bash
+sudo systemctl daemon-reload
+sudo mount -a
+```
+
+重启后检查 `df /home` 显示为 /dev/sdb 即为切换成功
+
+::: tip
+当挂载失败导致循环卡死在启动界面时，可以通过进入救援模式修改fstab
+1. 引导进入安装iso镜像
+2. 选择 Troubleshooting > Rescue a Fedora system
+3. 等待救援系统启动完毕
+4. 选择救援模式为 3) Skip to shell
+5. 挂载安装盘中的第三个分区到 /mnt/sysimage
+    + `mount /dev/sda3 /mnt/sysimage`
+6. 进入 /mnt/sysimage/root/ostree/deploy/fedora/deploy, 当中有四个文件夹
+    + 分别为 `aaaa.0`/`aaaa.0.origin`/`bbbb.0`/`bbbb.0.origin` 其中 aaaa与bbbb即为新旧两次安装的迭代
+7. 修改其中的 aaaa.0/etc/fstab 和 bbbb.0/etc/fstab 回退更改
+8. reboot 重启即可
 :::
 
 ## 安装 Nvidia 显卡驱动
@@ -94,13 +135,6 @@ sudo rpm-ostree kargs --append=rd.driver.blacklist=nouveau,nova_core --append=mo
 
 结束后重启即可
 
-## 安装基础工具
-
-```bash
-sudo rpm-ostree install --idempotent git neovim curl wget zsh fastfetch jq
-```
-安装完成后重启即可
-
 ## 安装输入法
 
 ### 1. 安装
@@ -110,16 +144,19 @@ sudo rpm-ostree install --idempotent fcitx5 fcitx5-rime librime-lua
 安装完成后重启即可
 
 ### 2. 开启自动激活输入法框架
-进入 系统设置 -> 键盘 -> 虚拟键盘 -> 选择 "Fcitx 5" 并保存
+
+编辑 /etc/environment
+添加 
+```
+GTK_IM_MODULE=fcitx5
+QT_IM_MODULE=fcitx5
+XMODIFIERS=@im=fcitx5
+```
+
+进入 系统设置 -> 开机自启动程序 -> 添加 -> Fcitx5
 ![启用 Fcitx 5](./2025-11-17-fedora-basic-setup--fcitx-enable.png)
 
-### 3. 启用 rime (中州韵)
-
-+ 打开 Fcitx5配置 > 输入法
-+ 将"中州韵"添加到左侧
-![启用 rime](./2025-11-17-fedora-basic-setup--fcitx-rime.png)
-
-### 4. 配置 rime，使用 rime-ice
+### 3. 配置 rime，使用 rime-ice
 
 使用 [[雾凇拼音]](https://github.com/iDvel/rime-ice)
 
@@ -131,7 +168,7 @@ echo -e "patch:\n  schema_list:\n    - schema: rime_ice" > rime/default.custom.y
 ```
 
 ::: tip
-如果rime无法重新部署，可以尝试注销重新登录
+如果rime无法重新部署，可以重启fcitx5
 :::
 
 ### 5. 配置 fcitx5 皮肤
@@ -151,3 +188,16 @@ rm fcitx5-theme-mint -rf
   + 将 主题 和 “深色主题” 选为 mint-green-dark
 
 ![Fcitx5 皮肤](./2025-11-17-fedora-basic-setup--fcitx-theme.png)
+
+## 基础美化
+
+1. 换一个背景
+
+2. 安装字体
+
+> 用户级字体应放置在 `~/.local/share/fonts`
+
+选择额外安装 FiraCode Nerd Font 作为开发字体和终端字体
+将 ttf 下载并置入 `~/.local/share/fonts`
+
+

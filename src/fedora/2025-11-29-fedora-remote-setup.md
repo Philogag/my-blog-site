@@ -20,7 +20,7 @@ footer:
 
 ## 更换登录DM - 选用 LightDM
 
-由于KDE自带的SDDM被仅用了选择其他桌面的能力，因此需要切换到其他DM，这里选择了较为轻量的LightDM，而且后续还可以进一步美化
+为了方便切换 WM，将 DM 切换为 LightDM
 
 1. 安装
 ```bash
@@ -34,28 +34,24 @@ sudo rpm-ostree apply-live
 
 2. 切换DM
 ```bash
-sudo systemctl disable sddm
+sudo systemctl disable gtk
+# sudo systemctl disable sddm # if you use kde
 sudo systemctl enable lightdm
-```
-
-3. 配置自动登录
-```bash
-sudo lightdm-settings
 ```
 
 3. 重启即生效
 
-## 安装桌面 - 选用 Budgie Desktop
+## 安装桌面 - 选用 Cinnamon Desktop
 
 1. 安装
 ```bash
-sudo rpm-ostree install budgie-desktop
+sudo rpm-ostree install cinnamon cinnamon-desktop
 ```
 
-2. 重启后在 LightDM 右上角切换到 Budgie Desktop
+2. 重启后在 LightDM 登录前切换到 Cinnamon
 
 ::: tip
-+ Budgie Desktop 没有自动兼容 Fcitx5，需要将 Fcitx5 添加到自启动应用中
+系统设置 > 系统信息 中显示为 X11 即为切换成功
 :::
 
 ## 安装并启用 RustDesk
@@ -71,6 +67,8 @@ sudo rpm-ostree apply-live
 ::: tip
 TODO：制作一个copr，便于自动更新rustdesk
 :::
+
+> flatpak 中的 rustdesk 不支持注册为服务，是个残次品，因此使用rpm安装
 
 2. 启用RustDesk为服务，使其在后台开机自启
 ```bash
