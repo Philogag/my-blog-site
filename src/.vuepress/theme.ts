@@ -27,6 +27,7 @@ export default hopeTheme({
 
   // 侧边栏
   // sidebar,
+  sidebar: [],
 
   navbarLayout: {
     start: ["Brand"],
